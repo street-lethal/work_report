@@ -58,7 +58,12 @@ func (s sendReportService) Send(report model.Report) error {
 		return err
 	}
 
-	fmt.Println(resp.StatusCode)
+	fmt.Printf("Status Code: %d \n", resp.StatusCode)
+
+	for k, v := range resp.Header {
+		fmt.Printf("%s: %s\n", k, v)
+	}
+
 	if resp.StatusCode >= 400 {
 		return fmt.Errorf(string(body))
 	}
