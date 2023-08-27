@@ -34,7 +34,13 @@ init:
 	touch data/jira.html
 
 init-linux:
+	if [ -e main ]; then \
+		unlink main; \
+	fi
 	ln -s bin/main_linux main
 
 init-mac:
+	if [ -e main ]; then \
+		unlink main; \
+	fi
 	ln -s bin/main_mac main
