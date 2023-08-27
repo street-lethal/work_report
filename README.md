@@ -29,7 +29,7 @@
 
 ## 報告用データ出力
 
-1. `config/settings.json` を編集
+1. [config/settings.json](config/settings.json) を編集
    * `months_ago` に対象月が何ヶ月前か入力(当月なら `0` 前月なら `1` )
    * `daily_report.starts_at` に開始時刻を入力
    * `daily_report.ends_at` に終了時刻を入力
@@ -43,13 +43,13 @@
      ```shell
      make gen-s
      ```
-3. `data/report.json` にデータが書き込まれていれば成功 (この段階で編集したい部分があれば編集)
+3. [data/report.json](data/report.json) にデータが書き込まれていれば成功 (この段階で編集したい部分があれば編集)
 
 ## 提出
 
 1. ブラウザーでプラットフォームにログイン
 2. 作業報告書の対象月詳細画面へ遷移
-3. `config/settings.json` を編集
+3. [config/settings.json](config/settings.json) を編集
    * `report_id` を URL からセット( `/p/workreport/***/` の `***` の部分)
    * `session_id` を Cookie (キーは `CAKEPHP`)からセット
    * `aws_auth` を Cookie (キーは `AWSELBAuthSessionCookie-0`) からセット
