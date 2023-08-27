@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	mode           = flag.String("mode", "gen", `"gen" or "send" (default: "gen")`)
+	mode           = flag.String("mode", "gen", `"gen", "send" or "clear" (default: "gen")`)
 	inputFilePath  = "./data/jira.html"
 	outputFilePath = "./data/report.json"
 )
@@ -15,9 +15,12 @@ var (
 func main() {
 	flag.Parse()
 
-	if *mode == "send" {
+	switch *mode {
+	case "send":
 		send()
-	} else {
+	case "clear":
+		clear()
+	default:
 		gen()
 	}
 }
@@ -39,6 +42,12 @@ func send() {
 
 func gen() {
 	if err := mainUseCase().GenerateReport(inputFilePath, outputFilePath); err != nil {
+		panic(err)
+	}
+}
+
+func clear() {
+	if err := mainUseCase().ClearReport(outputFilePath); err != nil {
 		panic(err)
 	}
 }

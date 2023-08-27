@@ -34,13 +34,18 @@ func (s generateReportDataService) Generate(works map[int][]string) model.Report
 			continue
 		}
 
-		daily[day.Format("20060102")] = model.DailyData{
-			TargetDate:  day.Format("2006-01-02"),
-			StartTime:   s.Setting.DailyReport.StartsAt,
-			EndTime:     s.Setting.DailyReport.EndsAt,
-			RelaxTime:   s.Setting.DailyReport.RestTime,
-			WorkContent: strings.Join(works[date-1], ", "),
+		dailyData := model.DailyData{
+			TargetDate: day.Format("2006-01-02"),
 		}
+		if works != nil {
+			dailyReport := s.Setting.DailyReport
+			dailyData.StartTime = dailyReport.StartsAt
+			dailyData.EndTime = dailyReport.EndsAt
+			dailyData.RelaxTime = dailyReport.RestTime
+			dailyData.WorkContent = strings.Join(works[date-1], ", ")
+		}
+
+		daily[day.Format("20060102")] = dailyData
 	}
 
 	return model.Report{

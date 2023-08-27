@@ -17,11 +17,17 @@ gen:
 send:
 	@./main -mode send
 
+clear:
+	@./main -mode clear
+
 gen-s:
 	@goenv exec go run main.go -mode gen
 
 send-s:
 	@goenv exec go run main.go -mode send
+
+clear-s:
+	@goenv exec go run main.go -mode clear
 
 init:
 	cp config/settings.sample.json config/settings.json
