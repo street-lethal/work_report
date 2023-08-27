@@ -1,0 +1,20 @@
+{
+  "data": {
+    "DailyReport": {
+      "20230104": {
+        "target_date": "2023-01-04",
+        "start_time": "10:00",
+        "end_time": "18:00",
+        "relax_time": "00:30",
+        "work_content": "test1"
+      },
+      "20230105": {
+        "target_date": "2023-01-05",
+        "start_time": "10:30",
+        "end_time": "18:30",
+        "relax_time": "01:00",
+        "work_content": "test2"
+      }
+    }
+  }
+}
