@@ -8,6 +8,7 @@ import (
 type MainUseCase interface {
 	GenerateReport(inputFilePath, outputFilePath string) error
 	SendReport(reportFilePath string) error
+	ClearReport(outputFilePath string) error
 }
 
 type mainUseCase struct {
@@ -44,11 +45,8 @@ func (u mainUseCase) GenerateReport(inputFilePath, outputFilePath string) error 
 	}
 
 	works := u.ParseJiraService.Parse(node)
-	if err := u.IOService.Output(works, outputFilePath); err != nil {
-		return err
-	}
-
-	return nil
+	report := u.Generate(works)
+	return report.ToFile(outputFilePath)
 }
 
 func (u mainUseCase) SendReport(reportFilePath string) error {
@@ -62,4 +60,9 @@ func (u mainUseCase) SendReport(reportFilePath string) error {
 	}
 
 	return nil
+}
+
+func (u mainUseCase) ClearReport(outputFilePath string) error {
+	report := u.Generate(nil)
+	return report.ToFile(outputFilePath)
 }

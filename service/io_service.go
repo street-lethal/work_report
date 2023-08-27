@@ -6,7 +6,6 @@ import (
 
 type IOService interface {
 	Input(filePath string) (string, error)
-	Output(works map[int][]string, filePath string) error
 }
 
 type ioService struct {
@@ -24,13 +23,4 @@ func (s ioService) Input(filePath string) (string, error) {
 	}
 
 	return string(bin), nil
-}
-func (s ioService) Output(works map[int][]string, filePath string) error {
-	report := s.GenerateReportDataService.Generate(works)
-
-	if err := report.ToFile(filePath); err != nil {
-		return err
-	}
-
-	return nil
 }
