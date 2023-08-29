@@ -70,20 +70,24 @@ func TestReport_ToQuery(t *testing.T) {
 				Data: WorkData{
 					DailyReport: DayToDailyData{
 						"01": DailyData{
+							ID:          "12345",
 							TargetDate:  "0101",
 							StartTime:   "10:00",
 							EndTime:     "18:00",
 							RelaxTime:   "00:30",
+							WorkTime:    "07:30",
 							WorkContent: "a, b, c",
 						},
 					},
 				},
 			},
 			want: `data%5BDailyReport%5D%5B01%5D%5Bend_time%5D=18%3A00&` +
+				`data%5BDailyReport%5D%5B01%5D%5Bid%5D=12345&` +
 				`data%5BDailyReport%5D%5B01%5D%5Brelax_time%5D=00%3A30&` +
 				`data%5BDailyReport%5D%5B01%5D%5Bstart_time%5D=10%3A00&` +
 				`data%5BDailyReport%5D%5B01%5D%5Btarget_date%5D=0101&` +
-				`data%5BDailyReport%5D%5B01%5D%5Bwork_content%5D=a%2C+b%2C+c`,
+				`data%5BDailyReport%5D%5B01%5D%5Bwork_content%5D=a%2C+b%2C+c&` +
+				`data%5BDailyReport%5D%5B01%5D%5Bwork_time%5D=07%3A30`,
 		},
 	}
 	for _, tt := range tests {
@@ -98,6 +102,60 @@ func TestReport_ToQuery(t *testing.T) {
 			}
 			if got != tt.want {
 				t.Errorf("ToQuery() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestDailyData_CalcWorkTime(t *testing.T) {
+	type fields struct {
+		StartTime string
+		EndTime   string
+		RelaxTime string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		want    string
+		wantErr bool
+	}{
+		{
+			fields: fields{
+				StartTime: "10:00",
+				EndTime:   "18:00",
+				RelaxTime: "00:30",
+			},
+			want: "07:30",
+		},
+		{
+			fields: fields{
+				StartTime: "09:30",
+				EndTime:   "18:00",
+				RelaxTime: "00:30",
+			},
+			want: "08:00",
+		},
+		{
+			fields: fields{
+				StartTime: "09:30",
+				EndTime:   "20:15",
+				RelaxTime: "01:30",
+			},
+			want: "09:15",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &DailyData{
+				StartTime: tt.fields.StartTime,
+				EndTime:   tt.fields.EndTime,
+				RelaxTime: tt.fields.RelaxTime,
+			}
+			if err := d.CalcWorkTime(); (err != nil) != tt.wantErr {
+				t.Errorf("CalcWorkTime() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if d.WorkTime != tt.want {
+				t.Errorf("CalcWorkTime() workTime = %v, want %v", d.WorkTime, tt.want)
 			}
 		})
 	}

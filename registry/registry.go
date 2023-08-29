@@ -43,6 +43,10 @@ func (i *Registry) NewSendReportService() service.SendReportService {
 	return service.NewSendReportService(i.setting)
 }
 
+func (i *Registry) NewLoginPlatformService() service.LoginPlatformService {
+	return service.NewLoginPlatformService()
+}
+
 func (i *Registry) NewMainUseCase() usecase.MainUseCase {
 	return usecase.NewMainUseCase(
 		i.NewGenerateReportService(),
@@ -50,6 +54,7 @@ func (i *Registry) NewMainUseCase() usecase.MainUseCase {
 		i.NewParseHTMLService(),
 		i.NewParseJiraService(),
 		i.NewSendReportService(),
+		i.NewLoginPlatformService(),
 		i.setting,
 	)
 }

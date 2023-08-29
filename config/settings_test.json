@@ -11,7 +11,5 @@
     3,
     9
   ],
-  "report_id": 999999,
-  "session_id": "abc123",
-  "aws_auth": "123abc"
+  "report_id": 999999
 }

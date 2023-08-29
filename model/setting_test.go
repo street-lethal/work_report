@@ -13,8 +13,6 @@ func TestFileToSetting(t *testing.T) {
 		MonthsAgo: 1,
 		Holidays:  []int{1, 2, 3, 9},
 		ReportID:  999999,
-		SessionID: "abc123",
-		AWSAuth:   "123abc",
 	}
 	wantedSetting.DailyReport.StartsAt = "10:00"
 	wantedSetting.DailyReport.EndsAt = "18:00"

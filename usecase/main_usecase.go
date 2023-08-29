@@ -7,7 +7,10 @@ import (
 
 type MainUseCase interface {
 	GenerateReport(inputFilePath, outputFilePath string) error
-	SendReport(reportFilePath string) error
+	SendReport(reportFilePath, sessionFilePath string) error
+	LogInAndSendReport(
+		platformIDFilePath, reportFilePath string,
+	) error
 	ClearReport(outputFilePath string) error
 }
 
@@ -17,6 +20,7 @@ type mainUseCase struct {
 	service.ParseHTMLService
 	service.ParseJiraService
 	service.SendReportService
+	service.LoginPlatformService
 	model.Setting
 }
 
@@ -26,10 +30,11 @@ func NewMainUseCase(
 	hs service.ParseHTMLService,
 	js service.ParseJiraService,
 	rs service.SendReportService,
+	ls service.LoginPlatformService,
 	setting model.Setting,
 ) MainUseCase {
 	return &mainUseCase{
-		gs, is, hs, js, rs, setting,
+		gs, is, hs, js, rs, ls, setting,
 	}
 }
 
@@ -49,13 +54,43 @@ func (u mainUseCase) GenerateReport(inputFilePath, outputFilePath string) error 
 	return report.ToFile(outputFilePath)
 }
 
-func (u mainUseCase) SendReport(reportFilePath string) error {
+func (u mainUseCase) SendReport(reportFilePath, sessionFilePath string) error {
 	report, err := model.FileToReport(reportFilePath)
 	if err != nil {
 		return err
 	}
 
-	if err := u.SendReportService.Send(*report); err != nil {
+	session, err := model.FileToPlatformSession(sessionFilePath)
+	if err != nil {
+		return err
+	}
+
+	if err := u.SendReportService.Send(*report, session); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (u mainUseCase) LogInAndSendReport(
+	platformIDFilePath, reportFilePath string,
+) error {
+	id, err := model.FileToPlatformID(platformIDFilePath)
+	if err != nil {
+		return err
+	}
+
+	report, err := model.FileToReport(reportFilePath)
+	if err != nil {
+		return err
+	}
+
+	session, err := u.LoginPlatformService.Login(*id)
+	if err != nil {
+		return err
+	}
+
+	if err := u.SendReportService.Send(*report, session); err != nil {
 		return err
 	}
 

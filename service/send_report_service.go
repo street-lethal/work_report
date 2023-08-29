@@ -9,7 +9,9 @@ import (
 )
 
 type SendReportService interface {
-	Send(report model.Report) error
+	Send(
+		report model.Report, session *model.PlatformSession,
+	) error
 }
 
 type sendReportService struct {
@@ -20,7 +22,9 @@ func NewSendReportService(setting model.Setting) SendReportService {
 	return &sendReportService{setting}
 }
 
-func (s sendReportService) Send(report model.Report) error {
+func (s sendReportService) Send(
+	report model.Report, session *model.PlatformSession,
+) error {
 	url := fmt.Sprintf("https://platform.levtech.jp/p/workreport/input/%d/", s.Setting.ReportID)
 
 	query, err := report.ToQuery()
@@ -35,13 +39,12 @@ func (s sendReportService) Send(report model.Report) error {
 
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Add("Referer", url)
-	req.Header.Add("Cookie", "login=p")
-	req.Header.Add("Cookie", fmt.Sprintf(
-		"CAKEPHP=%s", s.Setting.SessionID,
-	))
-	req.Header.Add("Cookie", fmt.Sprintf(
-		"AWSELBAuthSessionCookie-0=%s", s.Setting.AWSAuth,
-	))
+
+	req.AddCookie(&http.Cookie{Name: "login", Value: "p"})
+	req.AddCookie(&http.Cookie{Name: "CAKEPHP", Value: session.SessionID})
+	req.AddCookie(&http.Cookie{
+		Name: "AWSELBAuthSessionCookie-0", Value: session.AWSAuth,
+	})
 
 	client := http.DefaultClient
 	client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
