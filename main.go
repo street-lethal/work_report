@@ -7,9 +7,11 @@ import (
 )
 
 var (
-	mode           = flag.String("mode", "gen", `"gen", "send" or "clear" (default: "gen")`)
-	inputFilePath  = "./data/jira.html"
-	outputFilePath = "./data/report.json"
+	mode                    = flag.String("mode", "gen", `"gen", "send", "send-m" or "clear" (default: "gen")`)
+	inputFilePath           = "./data/jira.html"
+	outputFilePath          = "./data/report.json"
+	platformSessionFilePath = "./data/platform_session.json"
+	platformIDFilePath      = "./config/platform_id.json"
 )
 
 func main() {
@@ -18,6 +20,8 @@ func main() {
 	switch *mode {
 	case "send":
 		send()
+	case "send-m":
+		sendManually()
 	case "clear":
 		clear()
 	default:
@@ -35,7 +39,15 @@ func mainUseCase() usecase.MainUseCase {
 }
 
 func send() {
-	if err := mainUseCase().SendReport(outputFilePath); err != nil {
+	err := mainUseCase().LogInAndSendReport(platformIDFilePath, outputFilePath)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func sendManually() {
+	err := mainUseCase().SendReport(outputFilePath, platformSessionFilePath)
+	if err != nil {
 		panic(err)
 	}
 }

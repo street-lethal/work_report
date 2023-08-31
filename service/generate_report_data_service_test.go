@@ -50,6 +50,7 @@ func Test_generateReportDataService_Generate(t *testing.T) {
 					StartTime:   "10:00",
 					EndTime:     "18:00",
 					RelaxTime:   "00:30",
+					WorkTime:    "07:30",
 					WorkContent: "f, g",
 				},
 				"20230105": model.DailyData{
@@ -57,6 +58,7 @@ func Test_generateReportDataService_Generate(t *testing.T) {
 					StartTime:   "10:00",
 					EndTime:     "18:00",
 					RelaxTime:   "00:30",
+					WorkTime:    "07:30",
 					WorkContent: "h, i",
 				},
 				"20230106": model.DailyData{
@@ -64,6 +66,7 @@ func Test_generateReportDataService_Generate(t *testing.T) {
 					StartTime:   "10:00",
 					EndTime:     "18:00",
 					RelaxTime:   "00:30",
+					WorkTime:    "07:30",
 					WorkContent: "j, k, l",
 				},
 			},

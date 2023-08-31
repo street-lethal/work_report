@@ -12,10 +12,8 @@ type Setting struct {
 		EndsAt   string `json:"ends_at"`
 		RestTime string `json:"rest_time"`
 	} `json:"daily_report"`
-	Holidays  []int  `json:"holidays"`
-	ReportID  int    `json:"report_id"`
-	SessionID string `json:"session_id"`
-	AWSAuth   string `json:"aws_auth"`
+	Holidays []int `json:"holidays"`
+	ReportID int   `json:"report_id"`
 }
 
 func FileToSetting(filePath string) (*Setting, error) {

@@ -11,7 +11,5 @@
     3,
     9
   ],
-  "report_id": 999999,
-  "session_id": "take from cookie",
-  "aws_auth": "take from cookie"
+  "report_id": 999999
 }

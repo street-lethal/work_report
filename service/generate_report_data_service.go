@@ -37,12 +37,14 @@ func (s generateReportDataService) Generate(works map[int][]string) model.Report
 		dailyData := model.DailyData{
 			TargetDate: day.Format("2006-01-02"),
 		}
+
 		if works != nil {
 			dailyReport := s.Setting.DailyReport
 			dailyData.StartTime = dailyReport.StartsAt
 			dailyData.EndTime = dailyReport.EndsAt
 			dailyData.RelaxTime = dailyReport.RestTime
 			dailyData.WorkContent = strings.Join(works[date-1], ", ")
+			_ = dailyData.CalcWorkTime()
 		}
 
 		daily[day.Format("20060102")] = dailyData
