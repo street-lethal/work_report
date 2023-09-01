@@ -2,14 +2,7 @@
   "months_ago": 1,
   "daily_report": {
     "starts_at": "10:00",
-    "ends_at": "18:00",
     "rest_time": "00:30"
   },
-  "holidays": [
-    1,
-    2,
-    3,
-    9
-  ],
   "report_id": 999999
 }

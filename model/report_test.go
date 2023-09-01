@@ -107,6 +107,79 @@ func TestReport_ToQuery(t *testing.T) {
 	}
 }
 
+func TestDailyData_SetWorkTime(t *testing.T) {
+	type fields struct {
+		StartTime string
+		RelaxTime string
+	}
+	type args struct {
+		workHour int
+		workMin  int
+	}
+	tests := []struct {
+		name         string
+		fields       fields
+		args         args
+		wantWorkTime string
+		wantEndTime  string
+		wantErr      bool
+	}{
+		{
+			fields: fields{
+				StartTime: "10:00",
+				RelaxTime: "00:30",
+			},
+			args: args{
+				workHour: 7,
+				workMin:  30,
+			},
+			wantWorkTime: "07:30",
+			wantEndTime:  "18:00",
+		},
+		{
+			fields: fields{
+				StartTime: "09:30",
+				RelaxTime: "00:45",
+			},
+			args: args{
+				workHour: 7,
+				workMin:  30,
+			},
+			wantWorkTime: "07:30",
+			wantEndTime:  "17:45",
+		},
+		{
+			fields: fields{
+				StartTime: "10:15",
+				RelaxTime: "00:45",
+			},
+			args: args{
+				workHour: 7,
+				workMin:  45,
+			},
+			wantWorkTime: "07:45",
+			wantEndTime:  "18:45",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &DailyData{
+				StartTime: tt.fields.StartTime,
+				RelaxTime: tt.fields.RelaxTime,
+			}
+			if err := d.SetWorkTime(tt.args.workHour, tt.args.workMin); (err != nil) != tt.wantErr {
+				t.Errorf("SetWorkTime() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if d.WorkTime != tt.wantWorkTime {
+				t.Errorf("SetWorkTime() WorkTime = %v, want %v", d.WorkTime, tt.wantWorkTime)
+			}
+			if d.EndTime != tt.wantEndTime {
+				t.Errorf("SetWorkTime() EndTime = %v, want %v", d.EndTime, tt.wantEndTime)
+			}
+		})
+	}
+}
+
 func TestDailyData_CalcWorkTime(t *testing.T) {
 	type fields struct {
 		StartTime string

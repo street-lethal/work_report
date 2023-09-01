@@ -1,11 +1,14 @@
 package service
 
 import (
+	"strconv"
+	"work_report/model"
+
 	"golang.org/x/net/html"
 )
 
 type ParseJiraService interface {
-	Parse(node *html.Node) map[int][]string
+	Parse(node *html.Node) map[int]model.Work
 }
 
 type parseJiraService struct {
@@ -16,8 +19,8 @@ func NewParseJiraService(hs ParseHTMLService) ParseJiraService {
 	return &parseJiraService{hs}
 }
 
-func (s parseJiraService) Parse(node *html.Node) map[int][]string {
-	works := map[int][]string{}
+func (s parseJiraService) Parse(node *html.Node) map[int]model.Work {
+	works := map[int]model.Work{}
 	tickets := s.ParseHTMLService.FindAll(node, func(n *html.Node) bool {
 		return s.ParseHTMLService.HasClass(n, "fixedDataTableRowLayout_rowWrapper")
 	})
@@ -45,10 +48,16 @@ func (s parseJiraService) Parse(node *html.Node) map[int][]string {
 
 		for i, hour := range hours {
 			if hour.FirstChild != nil {
-				if works[i] == nil {
-					works[i] = []string{}
+				work, ok := works[i]
+				if !ok {
+					work = model.Work{}
 				}
-				works[i] = append(works[i], title)
+				work.AddContent(title)
+
+				floatHour, _ := strconv.ParseFloat(hour.FirstChild.Data, 64)
+				work.AddHour(floatHour)
+
+				works[i] = work
 			}
 		}
 	}

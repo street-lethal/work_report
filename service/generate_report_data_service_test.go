@@ -12,16 +12,14 @@ func Test_generateReportDataService_Generate(t *testing.T) {
 	monthsDiff := (now.Year()-2023)*12 + int(now.Month()) - 1
 	setting := model.Setting{
 		MonthsAgo: monthsDiff,
-		Holidays:  []int{1, 2, 3},
 	}
 	setting.DailyReport.StartsAt = "10:00"
-	setting.DailyReport.EndsAt = "18:00"
 	setting.DailyReport.RestTime = "00:30"
 	type fields struct {
 		Setting model.Setting
 	}
 	type args struct {
-		works map[int][]string
+		works map[int]model.Work
 	}
 	tests := []struct {
 		name   string
@@ -34,14 +32,14 @@ func Test_generateReportDataService_Generate(t *testing.T) {
 				Setting: setting,
 			},
 			args: args{
-				works: map[int][]string{
-					0: {"a"},
-					1: {"b", "c"},
-					2: {"d", "e"},
-					3: {"f", "g"},
-					4: {"h", "i"},
-					5: {"j", "k", "l"},
-					6: {"m", "n"},
+				works: map[int]model.Work{
+					0: {Contents: []string{"a"}, Hours: 0},
+					1: {Contents: []string{"b", "c"}, Hours: 0},
+					2: {Contents: []string{"d", "e"}, Hours: 0},
+					3: {Contents: []string{"f", "g"}, Hours: 7.5},
+					4: {Contents: []string{"h", "i"}, Hours: 8},
+					5: {Contents: []string{"j", "k", "l"}, Hours: 7.5},
+					6: {Contents: []string{"m", "n"}, Hours: 0},
 				},
 			},
 			want: model.DayToDailyData{
@@ -56,9 +54,9 @@ func Test_generateReportDataService_Generate(t *testing.T) {
 				"20230105": model.DailyData{
 					TargetDate:  "2023-01-05",
 					StartTime:   "10:00",
-					EndTime:     "18:00",
+					EndTime:     "18:30",
 					RelaxTime:   "00:30",
-					WorkTime:    "07:30",
+					WorkTime:    "08:00",
 					WorkContent: "h, i",
 				},
 				"20230106": model.DailyData{
@@ -78,7 +76,7 @@ func Test_generateReportDataService_Generate(t *testing.T) {
 				Setting: tt.fields.Setting,
 			}
 			got := s.Generate(tt.args.works)
-			if len(got.Data.DailyReport) != 20 {
+			if len(got.Data.DailyReport) != 3 {
 				t.Errorf("Generate() len() = %v, want = 20", len(got.Data.DailyReport))
 			}
 			if data, ok := got.Data.DailyReport["20230101"]; ok {
