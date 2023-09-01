@@ -7,7 +7,7 @@ import (
 )
 
 type GenerateReportDataService interface {
-	Generate(works map[int][]string) model.Report
+	Generate(works map[int]model.Work) model.Report
 }
 
 type generateReportDataService struct {
@@ -18,7 +18,7 @@ func NewGenerateReportDataService(setting model.Setting) GenerateReportDataServi
 	return &generateReportDataService{setting}
 }
 
-func (s generateReportDataService) Generate(works map[int][]string) model.Report {
+func (s generateReportDataService) Generate(works map[int]model.Work) model.Report {
 	now := time.Now()
 	year, month, _ := now.Date()
 	targetMonth := time.Month(int(month) - s.Setting.MonthsAgo)
@@ -30,7 +30,8 @@ func (s generateReportDataService) Generate(works map[int][]string) model.Report
 	daily := model.DayToDailyData{}
 	for date := 1; date <= daysInCurrentMonth; date++ {
 		day := time.Date(year, targetMonth, date, 0, 0, 0, 0, time.Local)
-		if day.Weekday() == time.Saturday || day.Weekday() == time.Sunday || s.isHoliday(date) {
+		work := works[date-1]
+		if work.Hours == 0 {
 			continue
 		}
 
@@ -41,10 +42,9 @@ func (s generateReportDataService) Generate(works map[int][]string) model.Report
 		if works != nil {
 			dailyReport := s.Setting.DailyReport
 			dailyData.StartTime = dailyReport.StartsAt
-			dailyData.EndTime = dailyReport.EndsAt
 			dailyData.RelaxTime = dailyReport.RestTime
-			dailyData.WorkContent = strings.Join(works[date-1], ", ")
-			_ = dailyData.CalcWorkTime()
+			dailyData.WorkContent = strings.Join(work.Contents, ", ")
+			_ = dailyData.SetWorkTime(work.HourMin())
 		}
 
 		daily[day.Format("20060102")] = dailyData
@@ -55,14 +55,4 @@ func (s generateReportDataService) Generate(works map[int][]string) model.Report
 			DailyReport: daily,
 		},
 	}
-}
-
-func (s generateReportDataService) isHoliday(date int) bool {
-	for _, holiday := range s.Setting.Holidays {
-		if date == holiday {
-			return true
-		}
-	}
-
-	return false
 }

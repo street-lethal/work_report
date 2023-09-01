@@ -32,9 +32,7 @@
 1. [config/settings.json](config/settings.json) を編集
    * `months_ago` に対象月が何ヶ月前か入力(当月なら `0` 前月なら `1` )
    * `daily_report.starts_at` に開始時刻を入力
-   * `daily_report.ends_at` に終了時刻を入力
    * `daily_report.rest_time` に休憩時間を入力
-   * `holidays` に祝日の数字を入力 (土日は入力不要)
 2. データ出力
    * ```shell
      make gen

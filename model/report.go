@@ -83,6 +83,40 @@ func (r Report) ToQuery() (string, error) {
 	return vals.Encode(), nil
 }
 
+func (d *DailyData) SetWorkTime(workHour, workMin int) error {
+	d.WorkTime = fmt.Sprintf("%02d:%02d", workHour, workMin)
+
+	startedHourMin := strings.Split(d.StartTime, ":")
+	startedHour, err := strconv.Atoi(startedHourMin[0])
+	if err != nil {
+		return err
+	}
+	startedMin, err := strconv.Atoi(startedHourMin[1])
+	if err != nil {
+		return err
+	}
+
+	restHourMin := strings.Split(d.RelaxTime, ":")
+	restHour, err := strconv.Atoi(restHourMin[0])
+	if err != nil {
+		return err
+	}
+	restMin, err := strconv.Atoi(restHourMin[1])
+	if err != nil {
+		return err
+	}
+
+	endTimeInMin :=
+		60*(startedHour+workHour+restHour) +
+			startedMin + workMin + restMin
+	endHour := endTimeInMin / 60
+	endMin := endTimeInMin - 60*endHour
+
+	d.EndTime = fmt.Sprintf("%02d:%02d", endHour, endMin)
+
+	return nil
+}
+
 func (d *DailyData) CalcWorkTime() error {
 	startedHourMin := strings.Split(d.StartTime, ":")
 	startedHour, err := strconv.Atoi(startedHourMin[0])
