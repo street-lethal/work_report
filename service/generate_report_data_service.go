@@ -30,7 +30,7 @@ func (s generateReportDataService) Generate(works map[int]model.Work) model.Repo
 	daily := model.DayToDailyData{}
 	for date := 1; date <= daysInCurrentMonth; date++ {
 		day := time.Date(year, targetMonth, date, 0, 0, 0, 0, time.Local)
-		work := works[date-1]
+		work := works[date]
 		if work.Hours == 0 {
 			continue
 		}

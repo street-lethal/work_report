@@ -10,7 +10,7 @@ import (
 
 type SendReportService interface {
 	Send(
-		report model.Report, session *model.PlatformSession,
+		report model.Report, reportID string, session *model.PlatformSession,
 	) error
 }
 
@@ -23,9 +23,9 @@ func NewSendReportService(setting model.Setting) SendReportService {
 }
 
 func (s sendReportService) Send(
-	report model.Report, session *model.PlatformSession,
+	report model.Report, reportID string, session *model.PlatformSession,
 ) error {
-	url := fmt.Sprintf("https://platform.levtech.jp/p/workreport/input/%d/", s.Setting.ReportID)
+	url := fmt.Sprintf("https://platform.levtech.jp/p/workreport/input/%s/", reportID)
 
 	query, err := report.ToQuery()
 	if err != nil {

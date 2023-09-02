@@ -48,7 +48,8 @@ func (s parseJiraService) Parse(node *html.Node) map[int]model.Work {
 
 		for i, hour := range hours {
 			if hour.FirstChild != nil {
-				work, ok := works[i]
+				day := i + 1
+				work, ok := works[day]
 				if !ok {
 					work = model.Work{}
 				}
@@ -57,7 +58,7 @@ func (s parseJiraService) Parse(node *html.Node) map[int]model.Work {
 				floatHour, _ := strconv.ParseFloat(hour.FirstChild.Data, 64)
 				work.AddHour(floatHour)
 
-				works[i] = work
+				works[day] = work
 			}
 		}
 	}

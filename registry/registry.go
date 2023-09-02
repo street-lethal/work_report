@@ -47,6 +47,13 @@ func (i *Registry) NewLoginPlatformService() service.LoginPlatformService {
 	return service.NewLoginPlatformService()
 }
 
+func (i *Registry) NewFetchPlatformService() service.FetchPlatformWorkService {
+	return service.NewFetchPlatformWorkService(
+		i.setting,
+		i.NewParseHTMLService(),
+	)
+}
+
 func (i *Registry) NewMainUseCase() usecase.MainUseCase {
 	return usecase.NewMainUseCase(
 		i.NewGenerateReportService(),
@@ -55,6 +62,7 @@ func (i *Registry) NewMainUseCase() usecase.MainUseCase {
 		i.NewParseJiraService(),
 		i.NewSendReportService(),
 		i.NewLoginPlatformService(),
+		i.NewFetchPlatformService(),
 		i.setting,
 	)
 }

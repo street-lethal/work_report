@@ -11,7 +11,6 @@ func TestFileToSetting(t *testing.T) {
 	}
 	wantedSetting := Setting{
 		MonthsAgo: 1,
-		ReportID:  999999,
 	}
 	wantedSetting.DailyReport.StartsAt = "10:00"
 	wantedSetting.DailyReport.RestTime = "00:30"

@@ -21,6 +21,7 @@ type mainUseCase struct {
 	service.ParseJiraService
 	service.SendReportService
 	service.LoginPlatformService
+	service.FetchPlatformWorkService
 	model.Setting
 }
 
@@ -31,10 +32,11 @@ func NewMainUseCase(
 	js service.ParseJiraService,
 	rs service.SendReportService,
 	ls service.LoginPlatformService,
+	fs service.FetchPlatformWorkService,
 	setting model.Setting,
 ) MainUseCase {
 	return &mainUseCase{
-		gs, is, hs, js, rs, ls, setting,
+		gs, is, hs, js, rs, ls, fs, setting,
 	}
 }
 
@@ -65,7 +67,32 @@ func (u mainUseCase) SendReport(reportFilePath, sessionFilePath string) error {
 		return err
 	}
 
-	if err := u.SendReportService.Send(*report, session); err != nil {
+	html, err := u.FetchPlatformWorkService.FetchReports(*session)
+	if err != nil {
+		return err
+	}
+
+	id, err := u.FetchPlatformWorkService.FindTargetMonthID(&html)
+	if err != nil {
+		return err
+	}
+
+	html, err = u.FetchPlatformWorkService.FetchReport(id, *session)
+	if err != nil {
+		return err
+	}
+
+	ids, err := u.FetchPlatformWorkService.FindDailyIDs(&html)
+	if err != nil {
+		return err
+	}
+
+	report = u.FetchPlatformWorkService.AttachDailyIDsToReport(ids, *report)
+	if err := report.ToFile(reportFilePath); err != nil {
+		return err
+	}
+
+	if err := u.SendReportService.Send(*report, id, session); err != nil {
 		return err
 	}
 
@@ -90,7 +117,32 @@ func (u mainUseCase) LogInAndSendReport(
 		return err
 	}
 
-	if err := u.SendReportService.Send(*report, session); err != nil {
+	html, err := u.FetchPlatformWorkService.FetchReports(*session)
+	if err != nil {
+		return err
+	}
+
+	reportID, err := u.FetchPlatformWorkService.FindTargetMonthID(&html)
+	if err != nil {
+		return err
+	}
+
+	html, err = u.FetchPlatformWorkService.FetchReport(reportID, *session)
+	if err != nil {
+		return err
+	}
+
+	ids, err := u.FetchPlatformWorkService.FindDailyIDs(&html)
+	if err != nil {
+		return err
+	}
+
+	report = u.FetchPlatformWorkService.AttachDailyIDsToReport(ids, *report)
+	if err := report.ToFile(reportFilePath); err != nil {
+		return err
+	}
+
+	if err := u.SendReportService.Send(*report, reportID, session); err != nil {
 		return err
 	}
 

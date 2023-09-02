@@ -10,6 +10,7 @@ var (
 	mode                    = flag.String("mode", "gen", `"gen", "send", "send-m" or "clear" (default: "gen")`)
 	inputFilePath           = "./data/jira.html"
 	outputFilePath          = "./data/report.json"
+	settingsFilePath        = "./config/settings.json"
 	platformSessionFilePath = "./data/platform_session.json"
 	platformIDFilePath      = "./config/platform_id.json"
 )
@@ -30,7 +31,7 @@ func main() {
 }
 
 func mainUseCase() usecase.MainUseCase {
-	r, err := registry.NewRegistry("./config/settings.json")
+	r, err := registry.NewRegistry(settingsFilePath)
 	if err != nil {
 		panic(err)
 	}

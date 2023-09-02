@@ -11,7 +11,6 @@ type Setting struct {
 		StartsAt string `json:"starts_at"`
 		RestTime string `json:"rest_time"`
 	} `json:"daily_report"`
-	ReportID int `json:"report_id"`
 }
 
 func FileToSetting(filePath string) (*Setting, error) {

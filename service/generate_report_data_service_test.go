@@ -33,13 +33,13 @@ func Test_generateReportDataService_Generate(t *testing.T) {
 			},
 			args: args{
 				works: map[int]model.Work{
-					0: {Contents: []string{"a"}, Hours: 0},
-					1: {Contents: []string{"b", "c"}, Hours: 0},
-					2: {Contents: []string{"d", "e"}, Hours: 0},
-					3: {Contents: []string{"f", "g"}, Hours: 7.5},
-					4: {Contents: []string{"h", "i"}, Hours: 8},
-					5: {Contents: []string{"j", "k", "l"}, Hours: 7.5},
-					6: {Contents: []string{"m", "n"}, Hours: 0},
+					1: {Contents: []string{"a"}, Hours: 0},
+					2: {Contents: []string{"b", "c"}, Hours: 0},
+					3: {Contents: []string{"d", "e"}, Hours: 0},
+					4: {Contents: []string{"f", "g"}, Hours: 7.5},
+					5: {Contents: []string{"h", "i"}, Hours: 8},
+					6: {Contents: []string{"j", "k", "l"}, Hours: 7.5},
+					7: {Contents: []string{"m", "n"}, Hours: 0},
 				},
 			},
 			want: model.DayToDailyData{
