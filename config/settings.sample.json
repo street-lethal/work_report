@@ -3,6 +3,5 @@
   "daily_report": {
     "starts_at": "10:00",
     "rest_time": "00:30"
-  },
-  "report_id": 999999
+  }
 }

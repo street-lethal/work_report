@@ -35,6 +35,10 @@ func (s parseHTMLService) FindFirst(
 	node *html.Node,
 	f func(node *html.Node) bool,
 ) *html.Node {
+	if node == nil {
+		return nil
+	}
+
 	for child := node.FirstChild; child != nil; child = child.NextSibling {
 		if f(child) {
 			return child
