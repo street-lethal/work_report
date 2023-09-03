@@ -2,25 +2,19 @@
 
 ## 準備 (初回のみ)
 
-1. 設定ファイル等生成
-   * ```shell
-     make init
-     ```
-2. 実行ファイル(バイナリー)のリンク
-   * Linux の場合
-     ```shell
-     make init-linux
-     ```
-   * Mac の場合
-     ```shell
-     make init-mac
-     ```
+* Linux の場合
+  ```shell
+  make init-linux
+  ```
+* Mac の場合
+  ```shell
+  make init-mac
+  ```
 
 ## Jira
 
-1. Jira Dashboard ( `/jira/dashboard/***` ) にブラウザーでアクセス
-2. インスペクターで `Tempo User Timesheet` の部分の要素を選択し、 inner HTML をコピー
-   * iframe になっているので iframe 内にある `<html>` タグを丸ごとコピーでOK
+1. ブラウザーで Jira Tempo ( `/plugins/servlet/ac/io.tempo.jira/tempo-app` ) にアクセス
+2. インスペクターで iframe 内にある `<html>` タグを選択し、 outer HTML をコピー
 3. [data/jira.html](data/jira.html) に貼り付け
    * Mac の場合は以下コマンドで実行可能
      ```shell
@@ -37,10 +31,6 @@
    * ```shell
      make gen
      ```
-     (ソースコードを直接実行する場合は以下)
-     ```shell
-     make gen-s
-     ```
 3. (結果確認) [data/report.json](data/report.json) にデータが書き込まれていれば成功 (この段階で編集したい部分があれば編集)
 
 ## 提出
@@ -51,10 +41,6 @@
 2. 提出
     * ```shell
       make send
-      ```
-      (ソースコードを直接実行する場合は以下)
-      ```shell
-      make send-s
       ```
 3. (結果確認) ブラウザーでプラットフォームの作業報告書の対象月詳細画面にアクセスして、データが入力されていれば成功
 
@@ -67,9 +53,5 @@
 3. 提出
    * ```shell
      make send-m
-     ```
-     (ソースコードを直接実行する場合は以下)
-     ```shell
-     make send-m-s
      ```
 4. (結果確認) ブラウザーで作業報告書の対象月詳細画面にアクセスして、データが入力されていれば成功

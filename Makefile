@@ -14,6 +14,24 @@ fmt:
 lint:
 	goenv exec go vet ./...
 
+init:
+	cp config/settings.sample.json config/settings.json
+	cp config/platform_id_test.json config/platform_id.json
+	cp data/platform_session_test.json data/platform_session.json
+	touch data/jira.html
+
+init-linux: init
+	if [ -e main ]; then \
+		unlink main; \
+	fi
+	ln -s bin/main_linux main
+
+init-mac: init
+	if [ -e main ]; then \
+		unlink main; \
+	fi
+	ln -s bin/main_mac main
+
 gen: ## Jira の HTML からレポート用データ(data/report.json)生成
 	@./main -mode gen
 
@@ -37,21 +55,3 @@ send-m-s:
 
 clear-s:
 	@goenv exec go run main.go -mode clear
-
-init:
-	cp config/settings.sample.json config/settings.json
-	cp config/platform_id_test.json config/platform_id.json
-	cp data/platform_session_test.json data/platform_session.json
-	touch data/jira.html
-
-init-linux:
-	if [ -e main ]; then \
-		unlink main; \
-	fi
-	ln -s bin/main_linux main
-
-init-mac:
-	if [ -e main ]; then \
-		unlink main; \
-	fi
-	ln -s bin/main_mac main
