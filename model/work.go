@@ -6,7 +6,17 @@ type Work struct {
 }
 
 func (w *Work) AddContent(content string) {
-	w.Contents = append(w.Contents, content)
+	duplicates := false
+	for _, c := range w.Contents {
+		if c != content {
+			continue
+		}
+		duplicates = true
+		break
+	}
+	if !duplicates {
+		w.Contents = append(w.Contents, content)
+	}
 }
 
 func (w *Work) AddHour(hour float64) {

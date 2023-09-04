@@ -24,19 +24,25 @@ func (i *Registry) NewGenerateReportService() service.GenerateReportDataService 
 }
 
 func (i *Registry) NewIOService() service.IOService {
-	return service.NewIOService(
-		i.NewGenerateReportService(),
-	)
+	return service.NewIOService()
 }
 
 func (i *Registry) NewParseHTMLService() service.ParseHTMLService {
 	return service.NewParseHTMLService()
 }
 
-func (i *Registry) NewParseJiraService() service.ParseJiraService {
-	return service.NewParseJiraService(
+func (i *Registry) NewParseCSVService() service.ParseCSVService {
+	return service.NewParseCSVService()
+}
+
+func (i *Registry) NewParseJiraHTMLService() service.ParseJiraHTMLService {
+	return service.NewParseJiraHTMLService(
 		i.NewParseHTMLService(),
 	)
+}
+
+func (i *Registry) NewParseJiraCSVService() service.ParseJiraCSVService {
+	return service.NewParseJiraCSVService()
 }
 
 func (i *Registry) NewSendReportService() service.SendReportService {
@@ -59,7 +65,8 @@ func (i *Registry) NewMainUseCase() usecase.MainUseCase {
 		i.NewGenerateReportService(),
 		i.NewIOService(),
 		i.NewParseHTMLService(),
-		i.NewParseJiraService(),
+		i.NewParseCSVService(),
+		i.NewParseJiraCSVService(),
 		i.NewSendReportService(),
 		i.NewLoginPlatformService(),
 		i.NewFetchPlatformService(),

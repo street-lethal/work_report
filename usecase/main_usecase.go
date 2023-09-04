@@ -18,7 +18,8 @@ type mainUseCase struct {
 	service.GenerateReportDataService
 	service.IOService
 	service.ParseHTMLService
-	service.ParseJiraService
+	service.ParseCSVService
+	service.ParseJiraCSVService
 	service.SendReportService
 	service.LoginPlatformService
 	service.FetchPlatformWorkService
@@ -29,29 +30,29 @@ func NewMainUseCase(
 	gs service.GenerateReportDataService,
 	is service.IOService,
 	hs service.ParseHTMLService,
-	js service.ParseJiraService,
+	cs service.ParseCSVService,
+	js service.ParseJiraCSVService,
 	rs service.SendReportService,
 	ls service.LoginPlatformService,
 	fs service.FetchPlatformWorkService,
 	setting model.Setting,
 ) MainUseCase {
 	return &mainUseCase{
-		gs, is, hs, js, rs, ls, fs, setting,
+		gs, is, hs, cs, js, rs, ls, fs, setting,
 	}
 }
 
 func (u mainUseCase) GenerateReport(inputFilePath, outputFilePath string) error {
-	htm, err := u.IOService.Input(inputFilePath)
+	csvRows, err := u.ParseCSVService.Parse(inputFilePath)
 	if err != nil {
 		return err
 	}
 
-	node, err := u.ParseHTMLService.Parse(htm)
+	works, err := u.ParseJiraCSVService.Parse(csvRows)
 	if err != nil {
 		return err
 	}
 
-	works := u.ParseJiraService.Parse(node)
 	report := u.Generate(works)
 	return report.ToFile(outputFilePath)
 }

@@ -14,12 +14,8 @@
 ## Jira
 
 1. ブラウザーで Jira Tempo ( `/plugins/servlet/ac/io.tempo.jira/tempo-app` ) にアクセス
-2. インスペクターで iframe 内にある `<html>` タグを選択し、 outer HTML をコピー
-3. [data/jira.html](data/jira.html) に貼り付け
-   * Mac の場合は以下コマンドで実行可能
-     ```shell
-     pbpaste > data/jira.html
-     ``` 
+2. `...` > `生データをダウンロード` > `CSV` で対象月データを CSV 形式でダウンロード
+3. ダウンロードした CSV ファイルを `jira.csv` にリネームし [data/](data) ディレクトリー下へ配置
 
 ## 報告用データ出力
 
@@ -32,6 +28,10 @@
      make gen
      ```
 3. (結果確認) [data/report.json](data/report.json) にデータが書き込まれていれば成功 (この段階で編集したい部分があれば編集)
+
+### 注意
+
+実行すると [data/jira.csv](data/jira.csv) が `data/jira_****_**_**_******.csv` にリネームされるので、再実行する場合は [data/jira.csv](data/jira.csv) にリネームし直してから実行
 
 ## 提出
 ### プラットフォームに自動ログインして提出する方法
