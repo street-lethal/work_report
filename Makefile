@@ -32,8 +32,9 @@ init-mac: init
 	fi
 	ln -s bin/main_mac main
 
-gen: ## Jira の HTML からレポート用データ(data/report.json)生成
+gen: ## Jira の CSV からレポート用データ(data/report.json)生成
 	@./main -mode gen
+	@mv data/jira.csv data/jira_`date "+%Y_%m_%d_%H%M%S"`.csv
 
 send: ## プラットフォームに自動ログインしてレポート用データを送信
 	@./main -mode send

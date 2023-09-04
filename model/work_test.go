@@ -28,6 +28,15 @@ func TestWork_AddContent(t *testing.T) {
 			},
 			want: []string{"one", "two", "three"},
 		},
+		{
+			fields: fields{
+				Contents: []string{"one", "two", "three"},
+			},
+			args: args{
+				content: "two",
+			},
+			want: []string{"one", "two", "three"},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

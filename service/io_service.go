@@ -9,11 +9,10 @@ type IOService interface {
 }
 
 type ioService struct {
-	GenerateReportDataService
 }
 
-func NewIOService(gs GenerateReportDataService) IOService {
-	return &ioService{gs}
+func NewIOService() IOService {
+	return &ioService{}
 }
 
 func (s ioService) Input(filePath string) (string, error) {

@@ -8,7 +8,7 @@ import (
 
 var (
 	mode                    = flag.String("mode", "gen", `"gen", "send", "send-m" or "clear" (default: "gen")`)
-	inputFilePath           = "./data/jira.html"
+	inputFilePath           = "./data/jira.csv"
 	outputFilePath          = "./data/report.json"
 	settingsFilePath        = "./config/settings.json"
 	platformSessionFilePath = "./data/platform_session.json"
