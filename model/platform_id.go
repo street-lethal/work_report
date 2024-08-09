@@ -2,6 +2,7 @@ package model
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 )
 
@@ -29,9 +30,6 @@ type PlatformRequestData struct {
 	Password string `json:"password"`
 }
 
-func (id PlatformID) RequestData() PlatformRequestData {
-	return PlatformRequestData{
-		Email:    id.Email,
-		Password: id.Password,
-	}
+func (id PlatformID) RequestData() string {
+	return fmt.Sprintf(`["%s","%s"]`, id.Email, id.Password)
 }
