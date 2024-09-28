@@ -33,20 +33,16 @@ func (s loginPlatformService) Login(id model.PlatformID) (*model.PlatformSession
 		return nil, err
 	}
 
-	pathWithQuery, cookies, err := s.req2(client, url, cookies)
+	url, cookies, err = s.req2(client, url, cookies)
 	if err != nil {
 		return nil, err
 	}
 
-	url = fmt.Sprintf("https://auth.levtech.jp%s", pathWithQuery)
 	cookies, err = s.req3(client, url, cookies)
 	if err != nil {
 		return nil, err
 	}
 
-	pathParts := strings.Split(pathWithQuery, "/")
-	pathID := pathParts[1]
-	url = fmt.Sprintf("https://auth.levtech.jp/api/%s/signin-by-email", pathID)
 	url, loginRes, cookies, err := s.req4(client, url, id, cookies)
 	if err != nil {
 		return nil, err
@@ -229,7 +225,7 @@ type LoginResponse struct {
 	RedirectUri string `json:"redirectUri"`
 }
 
-// https://auth.levtech.jp/api/xxxx/signin-by-email
+// https://auth.levtech.jp/xxxx/signin?client_id=ltp
 func (s loginPlatformService) req4(
 	client *http.Client, url string,
 	id model.PlatformID, cookies []*http.Cookie,
@@ -239,19 +235,16 @@ func (s loginPlatformService) req4(
 ) {
 	fmt.Println("=== Request 4 ===")
 
-	var j []byte
-	j, err = json.Marshal(id.RequestData())
+	req, err := http.NewRequest(
+		http.MethodPost, url, bytes.NewBuffer([]byte(id.RequestData())),
+	)
 	if err != nil {
 		return
 	}
 
-	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(j))
-	if err != nil {
-		return
-	}
-
-	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Content-Type", "text/plain")
+	req.Header.Add("Accept", "text/x-component")
+	req.Header.Add("Next-Action", "103245ecd807489f761364addaf6062a43ed68e6")
 
 	for _, cookie := range cookies {
 		req.AddCookie(cookie)
@@ -282,8 +275,18 @@ func (s loginPlatformService) req4(
 		return
 	}
 
-	err = json.Unmarshal(body, &loginRes)
-	if err != nil {
+	// 1:{"result":"SignedInCompletely","redirectUri":"https://platform.levtech.jp/oauth2/idpresponse?code=xxx&state=..."}
+	// という行を探す
+	found := false
+	for _, line := range strings.Split(string(body), "\n") {
+		if err := json.Unmarshal([]byte(line[2:]), &loginRes); err == nil {
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		err = fmt.Errorf("redirect uri not found")
 		return
 	}
 

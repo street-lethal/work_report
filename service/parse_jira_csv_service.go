@@ -30,7 +30,7 @@ func (ss parseJiraCSVService) Parse(csv [][]string) (map[int]model.Work, error) 
 			return nil, err
 		}
 
-		date, err := time.Parse("2006-01-02 15:04", row[3])
+		date, err := time.Parse("2006-01-02 15:04", row[4])
 		if err != nil {
 			return nil, err
 		}
