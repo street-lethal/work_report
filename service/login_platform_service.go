@@ -244,7 +244,7 @@ func (s loginPlatformService) req4(
 
 	req.Header.Add("Content-Type", "text/plain")
 	req.Header.Add("Accept", "text/x-component")
-	req.Header.Add("Next-Action", "103245ecd807489f761364addaf6062a43ed68e6")
+	req.Header.Add("Next-Action", "60adc4ef386d4c4f5441aed613a2105d80db04c124")
 
 	for _, cookie := range cookies {
 		req.AddCookie(cookie)
@@ -280,8 +280,10 @@ func (s loginPlatformService) req4(
 	found := false
 	for _, line := range strings.Split(string(body), "\n") {
 		if err := json.Unmarshal([]byte(line[2:]), &loginRes); err == nil {
-			found = true
-			break
+			if loginRes.RedirectUri != "" {
+				found = true
+				break
+			}
 		}
 	}
 
