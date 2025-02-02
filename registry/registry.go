@@ -50,7 +50,9 @@ func (i *Registry) NewSendReportService() service.SendReportService {
 }
 
 func (i *Registry) NewLoginPlatformService() service.LoginPlatformService {
-	return service.NewLoginPlatformService()
+	return service.NewLoginPlatformService(
+		service.NewParseHTMLService(),
+	)
 }
 
 func (i *Registry) NewFetchPlatformService() service.FetchPlatformWorkService {

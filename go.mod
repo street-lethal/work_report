@@ -1,6 +1,6 @@
 module work_report
 
-go 1.21
+go 1.24
 
 require (
 	github.com/google/go-querystring v1.1.0 // indirect

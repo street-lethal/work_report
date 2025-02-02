@@ -1,6 +1,7 @@
 package service
 
 import (
+	"regexp"
 	"strings"
 
 	"golang.org/x/net/html"
@@ -17,6 +18,8 @@ type ParseHTMLService interface {
 		f func(node *html.Node) bool,
 	) *html.Node
 	HasClass(node *html.Node, name string) bool
+	IsTag(node *html.Node, tagName string) bool
+	AttrValRegExp(node *html.Node, attrName, attrValRegExp string) bool
 	GetAttrValue(node *html.Node, attrName string) string
 }
 
@@ -76,6 +79,25 @@ func (s parseHTMLService) HasClass(node *html.Node, name string) bool {
 					return true
 				}
 			}
+		}
+	}
+	return false
+}
+
+func (s parseHTMLService) IsTag(node *html.Node, tagName string) bool {
+	return node.Data == tagName
+}
+
+func (s parseHTMLService) AttrValRegExp(node *html.Node, attrName, attrValRegExp string) bool {
+	attrs := node.Attr
+	for _, attr := range attrs {
+		if attr.Key == attrName {
+			matched, err := regexp.MatchString(attrValRegExp, attr.Val)
+			if err != nil {
+				return false
+			}
+
+			return matched
 		}
 	}
 	return false

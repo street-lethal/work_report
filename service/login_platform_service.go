@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"golang.org/x/net/html"
 	"io"
 	"net/http"
+	"regexp"
 	"strings"
 	"work_report/model"
 )
@@ -15,10 +17,11 @@ type LoginPlatformService interface {
 }
 
 type loginPlatformService struct {
+	ParseHTMLService
 }
 
-func NewLoginPlatformService() LoginPlatformService {
-	return &loginPlatformService{}
+func NewLoginPlatformService(ps ParseHTMLService) LoginPlatformService {
+	return &loginPlatformService{ps}
 }
 
 func (s loginPlatformService) Login(id model.PlatformID) (*model.PlatformSession, error) {
@@ -38,23 +41,28 @@ func (s loginPlatformService) Login(id model.PlatformID) (*model.PlatformSession
 		return nil, err
 	}
 
-	cookies, err = s.req3(client, url, cookies)
+	cookies, scriptPath, err := s.req3(client, url, cookies)
 	if err != nil {
 		return nil, err
 	}
 
-	url, loginRes, cookies, err := s.req4(client, url, id, cookies)
+	nextUUIDs, err := s.req4(client, scriptPath, cookies)
 	if err != nil {
 		return nil, err
 	}
 
-	url, cookies, err = s.req5(client, loginRes.RedirectUri, cookies)
+	url, loginRes, cookies, err := s.req5(client, url, id, nextUUIDs, cookies)
+	if err != nil {
+		return nil, err
+	}
+
+	url, cookies, err = s.req6(client, loginRes.RedirectUri, cookies)
 	if err != nil {
 		return nil, err
 	}
 
 	url = "https://platform.levtech.jp/p/"
-	url, cookies, err = s.req6(client, url, cookies)
+	url, cookies, err = s.req7(client, url, cookies)
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +111,7 @@ func (s loginPlatformService) req1(client *http.Client, url string) (
 	}
 
 	if resp.StatusCode >= 400 {
-		err = fmt.Errorf(string(body))
+		err = fmt.Errorf("%s", string(body))
 		return
 	}
 
@@ -157,7 +165,7 @@ func (s loginPlatformService) req2(
 	}
 
 	if resp.StatusCode >= 400 {
-		err = fmt.Errorf(string(body))
+		err = fmt.Errorf("%s", string(body))
 		return
 	}
 
@@ -177,7 +185,7 @@ func (s loginPlatformService) req2(
 func (s loginPlatformService) req3(
 	client *http.Client, url string, cookies []*http.Cookie,
 ) (
-	resCookies []*http.Cookie, err error,
+	resCookies []*http.Cookie, scriptPath string, err error,
 ) {
 	fmt.Println("=== Request 3 ===")
 
@@ -204,7 +212,7 @@ func (s loginPlatformService) req3(
 	fmt.Printf("Status Code: %d \n", resp.StatusCode)
 
 	if resp.StatusCode >= 400 {
-		err = fmt.Errorf(string(body))
+		err = fmt.Errorf("%s", string(body))
 		return
 	}
 
@@ -215,7 +223,86 @@ func (s loginPlatformService) req3(
 		return
 	}
 
+	ps := s.ParseHTMLService
+	node, err := ps.Parse(string(body))
+	if err != nil {
+		return
+	}
+
+	node = ps.FindFirst(node, func(n *html.Node) bool {
+		return ps.IsTag(n, "script") &&
+			ps.AttrValRegExp(
+				n, "src",
+				"/_next/static/chunks/app/%5Buuid%5D/signin/page-[a-f0-9]+.js",
+			)
+	})
+	scriptPath = ps.GetAttrValue(node, "src")
+
 	resCookies = append(cookies, resp.Cookies()...)
+	err = nil
+	return
+}
+
+// https://auth.levtech.jp//_next/static/chunks/app/%5Buuid%5D/signin/page-xxx.js
+func (s loginPlatformService) req4(
+	client *http.Client, scriptPath string, cookies []*http.Cookie,
+) (nextUUIDs []string, err error) {
+	fmt.Println("=== Request 4 ===")
+
+	url := fmt.Sprintf("https://auth.levtech.jp%s", scriptPath)
+
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return
+	}
+
+	for _, cookie := range cookies {
+		req.AddCookie(cookie)
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return
+	}
+
+	fmt.Printf("Status Code: %d \n", resp.StatusCode)
+
+	if resp.StatusCode >= 400 {
+		err = fmt.Errorf("%s", string(body))
+		return
+	}
+
+	if resp.StatusCode >= 300 {
+		err = fmt.Errorf(
+			"status code expected to be 2**, actual: %d", resp.StatusCode,
+		)
+		return
+	}
+
+	pattern := `[a-f0-9]{42}`
+	re, err := regexp.Compile(pattern)
+	if err != nil {
+		fmt.Println("Error compiling regex:", err)
+		return
+	}
+
+	matched := re.FindAll(body, -1)
+	if matched == nil {
+		err = fmt.Errorf("uuid not found")
+		return
+	}
+
+	nextUUIDs = make([]string, len(matched))
+	for i, v := range matched {
+		nextUUIDs[i] = string(v)
+	}
+
 	err = nil
 	return
 }
@@ -226,31 +313,31 @@ type LoginResponse struct {
 }
 
 // https://auth.levtech.jp/xxxx/signin?client_id=ltp
-func (s loginPlatformService) req4(
+func (s loginPlatformService) req5(
 	client *http.Client, url string,
-	id model.PlatformID, cookies []*http.Cookie,
+	id model.PlatformID, nextUUIDs []string, cookies []*http.Cookie,
 ) (
 	nextURL string, loginRes LoginResponse,
 	resCookies []*http.Cookie, err error,
 ) {
-	fmt.Println("=== Request 4 ===")
+	fmt.Println("=== Request 5-1 ===")
 
-	req, err := http.NewRequest(
+	req1, err := http.NewRequest(
 		http.MethodPost, url, bytes.NewBuffer([]byte(id.RequestData())),
 	)
 	if err != nil {
 		return
 	}
 
-	req.Header.Add("Content-Type", "text/plain")
-	req.Header.Add("Accept", "text/x-component")
-	req.Header.Add("Next-Action", "60adc4ef386d4c4f5441aed613a2105d80db04c124")
+	req1.Header.Add("Content-Type", "text/plain")
+	req1.Header.Add("Accept", "text/x-component")
+	req1.Header.Add("Next-Action", nextUUIDs[0])
 
 	for _, cookie := range cookies {
-		req.AddCookie(cookie)
+		req1.AddCookie(cookie)
 	}
 
-	resp, err := client.Do(req)
+	resp, err := client.Do(req1)
 	if err != nil {
 		return
 	}
@@ -271,7 +358,34 @@ func (s loginPlatformService) req4(
 	}
 
 	if resp.StatusCode >= 400 {
-		err = fmt.Errorf(string(body))
+		err = fmt.Errorf("%s", string(body))
+		return
+	}
+
+	fmt.Println("=== Request 5-2 ===")
+
+	req2, err := http.NewRequest(
+		http.MethodPost, url, bytes.NewBuffer([]byte("[]")),
+	)
+	if err != nil {
+		return
+	}
+
+	req2.Header.Add("Content-Type", "text/plain")
+	req2.Header.Add("Accept", "text/x-component")
+	req2.Header.Add("Next-Action", nextUUIDs[1])
+	for _, cookie := range cookies {
+		req2.AddCookie(cookie)
+	}
+
+	resp, err = client.Do(req2)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+
+	body, err = io.ReadAll(resp.Body)
+	if err != nil {
 		return
 	}
 
@@ -297,53 +411,6 @@ func (s loginPlatformService) req4(
 }
 
 // https://platform.levtech.jp//oauth2/idpresponse?code=xxx
-func (s loginPlatformService) req5(
-	client *http.Client, url string, cookies []*http.Cookie,
-) (
-	nextURL string, resCookies []*http.Cookie, err error,
-) {
-	fmt.Println("=== Request 5 ===")
-
-	req, err := http.NewRequest(http.MethodGet, url, nil)
-	if err != nil {
-		return
-	}
-
-	for _, cookie := range cookies {
-		req.AddCookie(cookie)
-	}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return
-	}
-
-	fmt.Printf("Status Code: %d \n", resp.StatusCode)
-
-	for k, v := range resp.Header {
-		if strings.ToLower(k) == "location" && len(v) > 0 {
-			nextURL = v[0]
-		}
-		fmt.Printf("%s: %s\n", k, v)
-	}
-
-	if resp.StatusCode >= 400 {
-		err = fmt.Errorf(string(body))
-		return
-	}
-
-	resCookies = append(cookies, resp.Cookies()...)
-	err = nil
-	return
-}
-
-// https://platform.levtech.jp/p/
 func (s loginPlatformService) req6(
 	client *http.Client, url string, cookies []*http.Cookie,
 ) (
@@ -381,7 +448,54 @@ func (s loginPlatformService) req6(
 	}
 
 	if resp.StatusCode >= 400 {
-		err = fmt.Errorf(string(body))
+		err = fmt.Errorf("%s", string(body))
+		return
+	}
+
+	resCookies = append(cookies, resp.Cookies()...)
+	err = nil
+	return
+}
+
+// https://platform.levtech.jp/p/
+func (s loginPlatformService) req7(
+	client *http.Client, url string, cookies []*http.Cookie,
+) (
+	nextURL string, resCookies []*http.Cookie, err error,
+) {
+	fmt.Println("=== Request 7 ===")
+
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return
+	}
+
+	for _, cookie := range cookies {
+		req.AddCookie(cookie)
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return
+	}
+
+	fmt.Printf("Status Code: %d \n", resp.StatusCode)
+
+	for k, v := range resp.Header {
+		if strings.ToLower(k) == "location" && len(v) > 0 {
+			nextURL = v[0]
+		}
+		fmt.Printf("%s: %s\n", k, v)
+	}
+
+	if resp.StatusCode >= 400 {
+		err = fmt.Errorf("%s", string(body))
 		return
 	}
 
