@@ -11,7 +11,7 @@ import (
 func Test_parseHTMLService_Parse(t *testing.T) {
 	bin, err := os.ReadFile("../data/html_test.html")
 	if err != nil {
-		t.Errorf(err.Error())
+		t.Errorf("%s", err.Error())
 	}
 	htm := string(bin)
 	type args struct {
@@ -76,7 +76,7 @@ func Test_parseHTMLService_HasClass(t *testing.T) {
 			s := parseHTMLService{}
 			node, err := s.Parse(tt.args.htm)
 			if err != nil {
-				t.Errorf(err.Error())
+				t.Errorf("%s", err.Error())
 			}
 			if got := s.HasClass(node.FirstChild, tt.args.name); got != tt.want {
 				t.Errorf("HasClass() = %v, want %v", got, tt.want)
@@ -118,8 +118,86 @@ func Test_parseHTMLService_FindFirst(t *testing.T) {
 			s := parseHTMLService{}
 			bin, _ := os.ReadFile("../data/html_test.html")
 			node, _ := s.Parse(string(bin))
-			got := s.FindFirst(node, func(node *html.Node) bool {
-				return s.HasClass(node, tt.args.className)
+			got := s.FindFirst(node, func(n *html.Node) bool {
+				return s.HasClass(n, tt.args.className)
+			})
+			for _, attr := range got.Attr {
+				if attr.Key != "id" {
+					continue
+				}
+
+				if attr.Val != tt.wantedId {
+					t.Errorf("FindFirst() attr = %v, want %v", attr.Val, tt.wantedId)
+				}
+			}
+		})
+	}
+
+	type args2 struct {
+		tagName string
+	}
+	tests2 := []struct {
+		name     string
+		args     args2
+		wantedId string
+	}{
+		{
+			args: args2{
+				tagName: "div",
+			},
+			wantedId: "1-1",
+		},
+		{
+			args: args2{
+				tagName: "span",
+			},
+			wantedId: "1-2",
+		},
+	}
+	for _, tt := range tests2 {
+		t.Run(tt.name, func(t *testing.T) {
+			s := parseHTMLService{}
+			bin, _ := os.ReadFile("../data/html_test.html")
+			node, _ := s.Parse(string(bin))
+			got := s.FindFirst(node, func(n *html.Node) bool {
+				return s.IsTag(n, tt.args.tagName)
+			})
+			for _, attr := range got.Attr {
+				if attr.Key != "id" {
+					continue
+				}
+
+				if attr.Val != tt.wantedId {
+					t.Errorf("FindFirst() attr = %v, want %v", attr.Val, tt.wantedId)
+				}
+			}
+		})
+	}
+
+	type args3 struct {
+		attrName      string
+		attrValRegExp string
+	}
+	tests3 := []struct {
+		name     string
+		args     args3
+		wantedId string
+	}{
+		{
+			args: args3{
+				attrName:      "class",
+				attrValRegExp: `-\d{4}-`,
+			},
+			wantedId: "2-1",
+		},
+	}
+	for _, tt := range tests3 {
+		t.Run(tt.name, func(t *testing.T) {
+			s := parseHTMLService{}
+			bin, _ := os.ReadFile("../data/html_test.html")
+			node, _ := s.Parse(string(bin))
+			got := s.FindFirst(node, func(n *html.Node) bool {
+				return s.AttrValRegExp(n, tt.args.attrName, tt.args.attrValRegExp)
 			})
 			for _, attr := range got.Attr {
 				if attr.Key != "id" {

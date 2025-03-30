@@ -170,7 +170,7 @@ func (s fetchPlatformWorkService) fetch(
 	}
 
 	if resp.StatusCode >= 400 {
-		return "", fmt.Errorf(string(body))
+		return "", fmt.Errorf("%s", string(body))
 	}
 
 	return string(body), nil
